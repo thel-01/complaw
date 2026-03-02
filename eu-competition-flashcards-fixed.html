@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EU Competition Law - Flashcard Revision</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.app-container{background:white;border-radius:20px;box-shadow:0 20px 40px rgba(0,0,0,.1);overflow:hidden;width:100%;max-width:500px}
+.header{background:#2c3e50;color:white;padding:20px;text-align:center}
+.section-nav{background:#34495e;padding:10px;display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.section-btn{padding:8px 16px;border:2px solid transparent;border-radius:6px;background:#2c3e50;color:white;cursor:pointer;font-size:14px;transition:all .2s ease}
+.section-btn:hover{background:#1a252f}
+.section-btn.active{background:#667eea;border-color:white}
+.stats{display:flex;justify-content:space-around;background:#34495e;color:white;padding:15px;font-size:14px;border-top:1px solid #2c3e50}
+.stat{text-align:center}
+.stat-number{font-size:24px;font-weight:bold;display:block}
+.progress-pips{display:flex;justify-content:center;gap:5px;margin-top:4px}
+.pip{width:10px;height:10px;border-radius:50%;background:#6c757d;transition:background .3s ease}
+.pip.filled{background:#20c997}
+.card-container{padding:40px 30px;min-height:300px;display:flex;flex-direction:column;justify-content:center;text-align:center}
+.card{background:#f8f9fa;border:2px solid #e9ecef;border-radius:15px;padding:30px 20px;margin-bottom:30px;cursor:pointer;transition:all .3s ease}
+.card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.1)}
+.card.flipped{background:#e8f5e8;border-color:#28a745}
+.case-name{font-size:22px;font-weight:bold;color:#2c3e50;margin-bottom:10px;line-height:1.3}
+.case-principle{font-size:18px;color:#555;line-height:1.5;text-align:left}
+.flip-hint{font-size:14px;color:#888;margin-top:15px;font-style:italic}
+.buttons{display:flex;gap:15px;justify-content:center}
+.btn{padding:12px 25px;border:none;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;transition:all .2s ease;min-width:100px}
+.btn-wrong{background:#dc3545;color:white}
+.btn-wrong:hover{background:#c82333;transform:translateY(-1px)}
+.btn-right{background:#28a745;color:white}
+.btn-right:hover{background:#218838;transform:translateY(-1px)}
+.completion-screen{text-align:center;padding:40px 20px}
+.completion-screen h2{color:#28a745;margin-bottom:20px;font-size:28px}
+.btn-restart{background:#007bff;color:white;margin-top:20px}
+.btn-restart:hover{background:#0056b3}
+.progress-bar{background:#e9ecef;height:8px;border-radius:4px;overflow:hidden;margin:15px 0}
+.progress-fill{background:linear-gradient(90deg,#28a745,#20c997);height:100%;transition:width .3s ease}
+.current-section{font-size:12px;color:#bbb;margin-top:5px}
+@media(max-width:480px){.case-name{font-size:20px}.case-principle{font-size:16px}.buttons{flex-direction:column}}
+.footer{text-align:center;padding:10px 20px;font-size:11px;color:#aaa;background:#f8f9fa;border-top:1px solid #e9ecef;letter-spacing:0.3px}
+</style>
+</head>
+<body>
+<div class="app-container">
+  <div class="header">
+    <h1>EU Competition Law</h1>
+    <p>Flashcard Revision</p>
+    <p class="current-section" id="current-section"></p>
+  </div>
+  <div class="section-nav">
+    <button class="section-btn active" onclick="switchSection(1)">Section 1: Basics</button>
+    <button class="section-btn" onclick="switchSection(2)">Section 2: Art. 101</button>
+    <button class="section-btn" onclick="switchSection(3)">Section 3: Art. 101(3)</button>
+    <button class="section-btn" onclick="switchSection(4)">Section 4: Art. 102</button>
+  </div>
+  <div class="stats">
+    <div class="stat"><span class="stat-number" id="learning-count">0</span><span>Learning</span></div>
+    <div class="stat"><span class="stat-number" id="mastered-count">0</span><span>Mastered</span></div>
+    <div class="stat">
+      <div class="progress-pips" id="progress-pips">
+        <div class="pip" id="pip0"></div>
+        <div class="pip" id="pip1"></div>
+        <div class="pip" id="pip2"></div>
+      </div>
+      <span>Card Progress</span>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+  <div class="card-container" id="card-container">
+    <div class="card" id="flashcard" onclick="flipCard()">
+      <div class="case-name" id="case-name"></div>
+      <div class="case-principle" id="case-principle" style="display:none"></div>
+      <div class="flip-hint" id="flip-hint">Click to reveal answer</div>
+    </div>
+    <div class="buttons" id="buttons" style="display:none">
+      <button class="btn btn-wrong" onclick="markWrong()">Got it Wrong</button>
+      <button class="btn btn-right" onclick="markRight()">Got it Right</button>
+    </div>
+  </div>
+  <div class="footer">Created by Till Helfert for CaRE Competition Law</div>
+</div>
+<script>
+const S={
+  1:{name:"Section 1: Market Definition & Basics",cards:[
+    {n:'What is an "undertaking" in EU competition law?',p:'Any entity engaged in <strong>economic activity</strong>, regardless of legal status or financing (Höfner test).'},
+    {n:'What activities are excluded from "undertaking"?',p:'• Public powers<br>• Social objectives (non-market)<br>• Employees/unions<br>• Final consumers'},
+    {n:'When are parent and subsidiary one undertaking?',p:'When parent <strong>controls</strong> subsidiary and subsidiary lacks <strong>real autonomy</strong> (single economic entity doctrine).'},
+    {n:'Why define the relevant market?',p:'To assess:<br>• De minimis thresholds<br>• Market power (Art. 102)<br>• Anti-competitive effects'},
+    {n:'What are the two dimensions of relevant market?',p:'<strong>Product market</strong> + <strong>Geographic market</strong>'},
+    {n:'How is relevant product market defined?',p:'<strong>Interchangeability</strong> - products that satisfy same consumer needs (demand substitutability via SSNIP test).'},
+    {n:'What is supply side substitutability?',p:'Whether suppliers can switch production if prices rise 5-10% (considers time/costs).'},
+    {n:'How is geographic market defined?',p:'Area with <strong>homogeneous competitive conditions</strong> (SSNIP test + transport costs, barriers).'},
+    {n:'What is the SSNIP Test?',p:'<strong>Small but Significant Non-transitory Increase in Price</strong> (5-10%) - tests if consumers/suppliers would switch.'},
+    {n:'When does an agreement "affect trade between Member States"?',p:'Must have <strong>sufficient probability</strong> to influence trade patterns (direct/indirect, actual/potential).'},
+    {n:'What are appreciable effect thresholds for trade?',p:'• Market share >5% AND<br>• Turnover >€40 million'},
+    {n:'What are De Minimis thresholds?',p:'• Horizontal: <strong>10%</strong><br>• Vertical: <strong>15%</strong><br>• Networks: 5%'},
+    {n:'Are "by object" restrictions subject to appreciable effect test?',p:'<strong>No</strong> - automatically considered appreciable (presumption rule).'},
+    {n:'Object vs. Effect restrictions?',p:'• <strong>Object</strong>: Distortive by nature (presumed harmful)<br>• <strong>Effect</strong>: Requires full market analysis'},
+    {n:'Examples of "by object" restrictions?',p:'• <strong>Horizontal</strong>: Price fixing, market sharing, bid rigging<br>• <strong>Vertical</strong>: RPM, sales restrictions'}
+  ]},
+  2:{name:"Section 2: Art. 101 - Forms of Cooperation",cards:[
+    {n:'What are the three forms of cooperation under Art. 101?',p:'1) <strong>Agreements</strong> (concurrence of wills)<br>2) <strong>Concerted practices</strong> (coordination without formal agreement)<br>3) <strong>Decisions by associations</strong> of undertakings'},
+    {n:'What constitutes an "agreement" under Art. 101?',p:'<strong>Concurrence of wills</strong> between undertakings to conduct themselves in a specific way. Need not be legally binding. Covers both horizontal and vertical agreements.'},
+    {n:'What are "concerted practices"?',p:'Coordination where undertakings <strong>substitute practical cooperation for competition</strong> without formal agreement. Requires:<br>1) Direct/indirect contact<br>2) Causal link to market conduct<br>3) Reducing uncertainty about competitors\' behavior.'},
+    {n:'How to distinguish concerted practices from parallel behavior?',p:'<strong>Parallel behavior</strong> is legal if done independently. <strong>Concerted practice</strong> is illegal when there\'s coordination/contact that reduces uncertainty. Each undertaking must determine its policy <strong>independently</strong>.'},
+    {n:'What horizontal agreements are hardcore restrictions (by object)?',p:'• Price fixing (including rebates)<br>• Market sharing (geographic/product)<br>• Output restrictions<br>• Bid rigging<br>• Collective boycotts<br>• Information sharing (prices/quantities)'},
+    {n:'What vertical agreements are hardcore restrictions?',p:'• <strong>Resale price maintenance</strong> (RPM)<br>• Territorial/customer <strong>sales restrictions</strong><br>• Restrictions on <strong>passive sales</strong><br>• Certain <strong>online sales bans</strong>'},
+    {n:'What are the Metro I criteria for selective distribution?',p:'1) <strong>Qualitative criteria</strong> (not quantitative)<br>2) Product <strong>requires</strong> selective distribution<br>3) Criteria applied <strong>non-discriminatorily</strong><br>4) <strong>Necessary</strong> and proportionate'},
+    {n:'When are franchise restrictions permitted (Pronuptia)?',p:'Restrictions allowed if essential for:<br>1. <strong>Protecting know-how</strong> from competitors<br>2. <strong>Maintaining network identity/reputation</strong>'},
+    {n:"What's the Pierre Fabre/Coty rule on online sales?",p:'<strong>Pierre Fabre</strong>: Absolute ban on all online sales = illegal<br><strong>Coty</strong>: Ban on third-party platforms for luxury goods = can be legal if proportionate to preserve luxury image'},
+    {n:'What is the VBER and its main threshold?',p:'<strong>Vertical Block Exemption Regulation</strong> - automatic exemption for vertical agreements where each party has <strong>&lt;30% market share</strong>. Excludes agreements with hardcore restrictions.'},
+    {n:'What happens if a vertical agreement contains hardcore restrictions?',p:'The <strong>entire agreement</strong> loses block exemption benefit. Presumption that Art. 101(3) conditions unlikely to be met.'},
+    {n:'What is resale price maintenance (RPM)?',p:'Supplier <strong>fixes minimum/fixed resale prices</strong>. Generally hardcore restriction. Recommended prices or maximum prices usually allowed.'},
+    {n:'When can territorial/customer restrictions be acceptable?',p:'• <strong>Active sales</strong> restrictions: sometimes acceptable<br>• <strong>Passive sales</strong> restrictions: generally hardcore<br>• Internet = passive sales (cannot restrict)'},
+    {n:'What information exchange is problematic between competitors?',p:'Exchange of <strong>strategic information</strong> (prices, quantities, customers) that reduces uncertainty about competitors\' future conduct.'},
+    {n:'How to avoid cartel liability if anticompetitive discussions occur at a meeting?',p:'Must <strong>distance yourself openly and unequivocally</strong> either during the meeting or afterwards by notifying competition authority. Silent participation = participation in cartel.'}
+  ]},
+  3:{name:"Section 3: Art. 101(3) Exemptions & Ancillary Restraints",cards:[
+    {n:'What are the four cumulative criteria for Art. 101(3) exemption?',p:'1) <strong>Efficiency gains</strong> (production/innovation improvements)<br>2) <strong>Fair share for consumers</strong> (benefits passed on)<br>3) <strong>Indispensability</strong> (restrictions necessary & proportionate)<br>4) <strong>No elimination of competition</strong> (substantial competition remains)'},
+    {n:"What's the difference between individual and block exemptions?",p:'<strong>Individual</strong>: Case-by-case assessment under 101(3) criteria<br><strong>Block</strong>: Automatic exemption by regulation for categories of agreements (e.g., VBER) if conditions met'},
+    {n:'What constitutes "efficiency gains" under 101(3)?',p:'• <strong>Objective improvements</strong> in production/distribution<br>• <strong>Technical/economic progress</strong><br>• Must be <strong>linked to the agreement</strong> and <strong>likely to occur</strong>'},
+    {n:'What is a "fair share for consumers" under 101(3)?',p:'Consumers must receive <strong>adequate benefits</strong> to compensate for restrictions:<br>• Lower prices<br>• Better quality/technology<br>• Improved distribution<br>• Greater product variety'},
+    {n:'What does "indispensability" mean under 101(3)?',p:'Each restriction must be:<br>• <strong>Necessary</strong> to achieve the efficiency gains<br>• <strong>Proportionate</strong> (least restrictive means)<br>• No less restrictive alternative available'},
+    {n:'When is competition "substantially eliminated" under 101(3)?',p:'When agreement removes competitive constraints on parties for substantial part of products. Generally problematic if dominant position created/strengthened.'},
+    {n:'What are ancillary restraints?',p:'Restrictions <strong>directly related and necessary</strong> to implement a pro-competitive main agreement. Must be:<br>• <strong>Objectively necessary</strong><br>• <strong>Proportionate</strong> (time/scope)<br>• <strong>Subordinate</strong> to main objective'},
+    {n:'Give examples of acceptable ancillary restraints.',p:'• <strong>Non-compete clause</strong> in business sale (2-3 years)<br>• Training/know-how restrictions in <strong>franchising</strong><br>• Customer protection in <strong>exclusive distribution</strong> setup<br>• IP protection in <strong>technology transfer</strong>'},
+    {n:'How do block exemptions work?',p:'<strong>Automatic exemption</strong> if:<br>• Agreement type covered by regulation<br>• Market share below threshold<br>• No hardcore restrictions<br>• Comply with other conditions<br>Legal certainty without individual assessment.'},
+    {n:'What are the main block exemption regulations?',p:'• <strong>VBER</strong>: Vertical agreements (&lt;30%)<br>• <strong>R&D</strong>: Research & development (&lt;25%)<br>• <strong>Specialization</strong>: Production agreements (&lt;20%)<br>• <strong>Technology Transfer</strong>: Patent/know-how licensing (&lt;20-30%)'},
+    {n:'Can hardcore restrictions ever be exempted under 101(3)?',p:'<strong>Theoretically yes</strong>, but <strong>practically very difficult</strong>. Must prove all four criteria met despite serious restriction. Commission/courts very skeptical. No block exemption available.'},
+    {n:'Who bears the burden of proof for 101(3)?',p:'The <strong>undertaking claiming exemption</strong> must prove all four criteria are satisfied. Competition authority proves 101(1) violation first.'},
+    {n:'Can you combine block exemption with individual exemption?',p:'<strong>No double exemption</strong> needed. If block exemption applies, no need for 101(3) analysis. If block exemption fails, can still try individual exemption.'},
+    {n:"What's the time limit for ancillary restraints?",p:'Must be limited to what is necessary:<br>• Business sale non-compete: typically <strong>2-3 years</strong><br>• Know-how protection: duration of <strong>value of know-how</strong><br>• Geographic scope: where seller was <strong>actually active</strong>'},
+    {n:'When do efficiencies "outweigh" anticompetitive effects?',p:'Net positive effect considering:<br>• <strong>Magnitude</strong> of efficiencies vs restrictions<br>• <strong>Likelihood</strong> of realization<br>• <strong>Consumer benefit</strong> level<br>• Market context and alternatives'}
+  ]},
+  4:{name:"Section 4: Art. 102 - Dominance & Abuses",cards:[
+    {n:'What is a "dominant position" under Art. 102?',p:'Position of <strong>economic strength</strong> enabling an undertaking to:<br>• <strong>Prevent effective competition</strong><br>• Behave <strong>independently</strong> of competitors, customers, consumers<br>• To an <strong>appreciable extent</strong>'},
+    {n:'What are the market share thresholds for dominance?',p:'• <strong>&gt;70-80%</strong>: Clear dominance<br>• <strong>&gt;50%</strong>: Presumption of dominance (if stable over time)<br>• <strong>40-50%</strong>: Possible dominance (needs analysis)<br>• <strong>&lt;40%</strong>: Generally not dominant'},
+    {n:'What factors besides market share indicate dominance?',p:'• <strong>Barriers to entry/expansion</strong><br>• Relative strength vs competitors<br>• Buyer power (or lack thereof)<br>• Financial/technological resources<br>• Vertical integration<br>• Economies of scale/scope'},
+    {n:'What is collective dominance?',p:'Two or more <strong>independent undertakings</strong> acting as one due to:<br>1. <strong>High market transparency</strong><br>2. <strong>Retaliation mechanisms</strong> (incentive not to compete)<br>3. <strong>No competitive pressure</strong> from outsiders'},
+    {n:'What is the "special responsibility" of dominant firms?',p:'Dominant firms must <strong>not impair genuine competition</strong> through their conduct. Higher standard than non-dominant firms. Must compete "on the merits" only.'},
+    {n:'What are the main types of abuse?',p:'• <strong>Exploitative</strong>: Directly harm customers (excessive prices)<br>• <strong>Exclusionary</strong>: Foreclose competitors (predatory pricing, rebates)<br>• <strong>Discriminatory</strong>: Different treatment without justification'},
+    {n:'What is tying/bundling abuse?',p:'<strong>Forcing</strong> customers to buy product B (tied) when buying product A (tying) where:<br>• Two <strong>separate products</strong><br>• <strong>No objective justification</strong><br>• <strong>Foreclosure effect</strong> on tied market<br>• Leveraging dominance to another market'},
+    {n:'What types of rebates can be abusive?',p:'• <strong>Loyalty/exclusivity rebates</strong>: In exchange for buying all/most from dominant firm<br>• <strong>Target rebates</strong>: Retroactive discounts past threshold<br>• <strong>OK if</strong>: Quantity rebates based on cost savings, applied equally'},
+    {n:'What is predatory pricing?',p:'Pricing <strong>below cost</strong> to eliminate competitors:<br>• <strong>Below AVC</strong> (average variable cost): Per se abusive<br>• <strong>Between AVC and ATC</strong>: Abusive if anti-competitive intent proven<br>• Must have realistic recoupment possibility'},
+    {n:'What are the Bronner criteria for essential facilities?',p:'Refusal to grant access is abuse if:<br>1. Facility is <strong>indispensable</strong> (no actual/potential substitute)<br>2. Refusal <strong>eliminates all competition</strong> downstream<br>3. <strong>No objective justification</strong>'},
+    {n:'When can a dominant firm charge high prices?',p:'<strong>Excessive pricing</strong> is abuse if prices have <strong>no reasonable relation to economic value</strong>. Must show:<br>• Price excessive compared to costs<br>• Price excessive "in itself" or vs competitors<br>• Not justified by market conditions'},
+    {n:'What defenses exist for alleged abuse?',p:'• <strong>Objective justification</strong>: External factors, different costs<br>• <strong>Meeting competition</strong>: Matching competitors (proportionately)<br>• <strong>Efficiency defense</strong>: Benefits outweigh harm, indispensable, no elimination of competition'},
+    {n:'What is the "as efficient competitor" test?',p:'Assesses if equally efficient competitor could survive the dominant firm\'s conduct. Used for:<br>• Margin squeeze<br>• Predatory pricing<br>• Some rebate schemes<br>If yes → likely not abusive'},
+    {n:'Can dominance in one market lead to abuse in another?',p:'<strong>Yes</strong> - through leveraging. Examples:<br>• Tying/bundling<br>• Using dominance to foreclose related markets<br>• Cross-subsidization<br>• Refusal to supply in one market to gain advantage in another'},
+    {n:'What constitutes "substantial part" of internal market?',p:'Not about size but <strong>importance</strong>:<br>• Economic importance of area<br>• Volume of products concerned<br>• Even a single Member State, city, or port can qualify<br>• Structure and infrastructure matter'}
+  ]}
+};
+
+let cs=1,lStack=[],mStack=[],cur=null,flipped=false,streaks={};
+
+function init(n){
+  cs=n; lStack=[...S[n].cards]; mStack=[]; streaks={}; cur=null; flipped=false;
+  S[n].cards.forEach(c=>{streaks[c.n]=0;});
+  document.getElementById('current-section').textContent=S[n].name;
+  document.getElementById('case-principle').style.display='none';
+  document.getElementById('flip-hint').style.display='block';
+  document.getElementById('buttons').style.display='none';
+  document.getElementById('flashcard').classList.remove('flipped');
+  updateStats(); nextCard();
+}
+
+function switchSection(n){
+  if(!S[n])return;
+  document.querySelectorAll('.section-btn').forEach((b,i)=>b.classList.toggle('active',i===n-1));
+  const cc=document.getElementById('card-container');
+  if(!cc.querySelector('#flashcard')) cc.innerHTML=cardHTML();
+  init(n);
+}
+
+function cardHTML(){return`<div class="card" id="flashcard" onclick="flipCard()"><div class="case-name" id="case-name"></div><div class="case-principle" id="case-principle" style="display:none"></div><div class="flip-hint" id="flip-hint">Click to reveal answer</div></div><div class="buttons" id="buttons" style="display:none"><button class="btn btn-wrong" onclick="markWrong()">Got it Wrong</button><button class="btn btn-right" onclick="markRight()">Got it Right</button></div>`;}
+
+function updateStats(){
+  document.getElementById('learning-count').textContent=lStack.length;
+  document.getElementById('mastered-count').textContent=mStack.length;
+  // Update mastery progress pips for current card
+  const progress = cur ? (streaks[cur.n] || 0) : 0;
+  for(let i=0;i<3;i++){
+    document.getElementById('pip'+i).classList.toggle('filled', i < progress);
+  }
+  document.getElementById('progress-fill').style.width=(mStack.length/S[cs].cards.length*100)+'%';
+}
+
+function nextCard(){
+  if(!lStack.length){done();return;}
+  // Avoid repeating the same card immediately if there are multiple cards
+  let candidates = lStack.length > 1 && cur ? lStack.filter(c=>c.n!==cur.n) : lStack;
+  // Candidates could be empty if lStack only has the current card (shouldn't happen but safety)
+  if(!candidates.length) candidates=lStack;
+  cur=candidates[Math.floor(Math.random()*candidates.length)];
+  document.getElementById('case-name').textContent=cur.n;
+  document.getElementById('case-principle').innerHTML=cur.p;
+  document.getElementById('case-principle').style.display='none';
+  document.getElementById('flip-hint').style.display='block';
+  document.getElementById('buttons').style.display='none';
+  document.getElementById('flashcard').classList.remove('flipped');
+  flipped=false; updateStats();
+}
+
+function flipCard(){
+  if(!flipped){
+    document.getElementById('case-principle').style.display='block';
+    document.getElementById('flip-hint').style.display='none';
+    document.getElementById('buttons').style.display='flex';
+    document.getElementById('flashcard').classList.add('flipped');
+    flipped=true;
+  }
+}
+
+function markWrong(){
+  streaks[cur.n]=0;
+  nextCard();
+}
+
+function markRight(){
+  streaks[cur.n]++;
+  if(streaks[cur.n]>=3){
+    // Remove from learning stack and add to mastered
+    const i=lStack.findIndex(c=>c.n===cur.n);
+    if(i!==-1) mStack.push(lStack.splice(i,1)[0]);
+  }
+  nextCard();
+}
+
+function done(){
+  document.getElementById('card-container').innerHTML=`<div class="completion-screen"><h2>🎉 Congratulations!</h2><p>You've mastered all cards in ${S[cs].name}!</p><p>Try another section or restart this one.</p><button class="btn btn-restart" onclick="restart()">Restart Section</button></div>`;
+}
+
+function restart(){document.getElementById('card-container').innerHTML=cardHTML();init(cs);}
+
+init(1);
+</script>
+</body>
+</html>
